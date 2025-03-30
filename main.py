@@ -1,16 +1,16 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient
+from pydantic import BaseModel
+from typing import List, Optional
 from datetime import datetime
-import os
-from dotenv import load_dotenv
 
-# Carrega as variáveis de ambiente
-load_dotenv()
+app = FastAPI(
+    title="Totymark API",
+    description="API para sistema de mensagens em tempo real",
+    version="1.0.0"
+)
 
-app = FastAPI(title="Totymark API")
-
-# Configuração do CORS
+# Configuração CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -19,19 +19,57 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Conexão com o MongoDB
-MONGODB_URL = os.getenv("MONGODB_URL", "mongodb://localhost:27017")
-client = AsyncIOMotorClient(MONGODB_URL)
-db = client.totymark
+# Modelos Pydantic
+class MessageBase(BaseModel):
+    content: str
+    sender_id: str
 
+class Message(MessageBase):
+    id: str
+    timestamp: datetime
+    read: bool = False
+
+class UserBase(BaseModel):
+    username: str
+    email: str
+
+class User(UserBase):
+    id: str
+    active: bool = True
+    last_seen: Optional[datetime] = None
+
+# Rotas da API
 @app.get("/")
-async def root():
-    return {"message": "Bem-vindo à API do Totymark!"}
+def root():
+    return {
+        "app": "Totymark",
+        "version": "1.0.0",
+        "status": "online",
+        "endpoints": {
+            "messages": "/messages",
+            "users": "/users",
+            "docs": "/docs"
+        }
+    }
+
+@app.get("/messages", response_model=List[Message])
+def get_messages():
+    # TODO: Implementar busca de mensagens no MongoDB
+    return []
+
+@app.get("/users", response_model=List[User])
+def get_users():
+    # TODO: Implementar busca de usuários no MongoDB
+    return []
 
 @app.get("/health")
-async def health_check():
-    return {"status": "healthy", "timestamp": datetime.utcnow()}
+def health_check():
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat(),
+        "version": "1.0.0"
+    }
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000) 
+    uvicorn.run(app, host="0.0.0.0", port=8001) 
