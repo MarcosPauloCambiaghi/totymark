@@ -1,79 +1,63 @@
-# Progresso do Projeto Totymark
+# Resumo do Progresso - Totymark
 
-## O que já foi feito:
+## O que foi feito hoje:
+1. Configuração inicial do projeto
+   - Criação da estrutura do projeto
+   - Configuração do FastAPI
+   - Configuração do MongoDB local
+   - Implementação dos endpoints básicos
 
-1. **Configuração Inicial**
-   - ✅ Criação do repositório Git
-   - ✅ Estrutura básica do projeto
-   - ✅ Configuração do MongoDB
-   - ✅ Configuração do FastAPI
+2. Sistema de Notificações
+   - Implementação do endpoint `/notify-pix`
+   - Configuração do envio de emails
+   - Configuração do envio de WhatsApp
+   - Testes de integração
 
-2. **Backend**
-   - ✅ Estrutura básica da API
-   - ✅ Modelos de dados (User e Message)
-   - ✅ Endpoints básicos:
-     - `/` (root)
-     - `/health` (verificação de saúde)
-     - `/messages` (estrutura básica)
-     - `/users` (estrutura básica)
+3. Banco de Dados
+   - Instalação do MongoDB local
+   - Configuração das coleções (users e messages)
+   - Implementação das operações CRUD
 
-3. **Banco de Dados**
-   - ✅ Instalação do MongoDB
-   - ✅ Configuração inicial
-   - ✅ Criação do usuário admin
+## Próximos passos:
+1. Resolver problemas de conexão
+   - Verificar configuração do MongoDB
+   - Testar conexão com o banco de dados
+   - Implementar melhor tratamento de erros
 
-## Próximos Passos:
+2. Melhorias no sistema de notificações
+   - Configurar SMTP para envio de emails
+   - Implementar fila de mensagens
+   - Adicionar retry em caso de falha
 
-1. **Backend - Implementações Pendentes**
-   - [ ] Implementar autenticação JWT
-   - [ ] Conectar endpoints com MongoDB
-   - [ ] Implementar CRUD completo para usuários
-   - [ ] Implementar CRUD completo para mensagens
-   - [ ] Adicionar WebSockets para mensagens em tempo real
+3. Segurança
+   - Implementar rate limiting
+   - Adicionar validação de dados
+   - Melhorar tratamento de erros
 
-2. **Frontend**
-   - [ ] Configurar projeto Flutter
-   - [ ] Criar telas principais:
-     - [ ] Login/Registro
-     - [ ] Lista de conversas
-     - [ ] Chat
-     - [ ] Perfil do usuário
+## Como executar o projeto:
+1. Iniciar o MongoDB:
+   ```bash
+   sudo systemctl start mongod
+   ```
 
-3. **Segurança**
-   - [ ] Implementar validação de dados
-   - [ ] Adicionar rate limiting
-   - [ ] Configurar CORS adequadamente
-   - [ ] Implementar logs de segurança
+2. Iniciar o servidor:
+   ```bash
+   uvicorn main:app --reload --port 8081
+   ```
 
-## Como Executar o Projeto:
+3. Acessar a API:
+   - Documentação: http://127.0.0.1:8081/docs
+   - Endpoint principal: http://127.0.0.1:8081
 
-1. **Iniciar MongoDB**
-```bash
-sudo systemctl start mongod
-sudo systemctl status mongod  # verificar status
-```
+## Problemas conhecidos:
+1. Erro de conexão com o MongoDB
+2. Porta 8081 em uso (necessário limpar processos)
+3. Falta de configuração SMTP para emails
 
-2. **Iniciar o Backend**
-```bash
-# Na pasta do projeto
-uvicorn main:app --reload --port 8001
-```
-
-3. **Acessar a API**
-- API principal: http://localhost:8001
-- Documentação: http://localhost:8001/docs
-
-## Credenciais e Configurações:
-
-1. **MongoDB**
-- URL: mongodb://localhost:27017
-- Usuário Admin: MarcosPaulo
-- Database: totymark
-
-2. **Arquivos de Configuração**
-- `.env` - Variáveis de ambiente
-- `main.py` - Arquivo principal da API
-- `requirements.txt` - Dependências Python
+## Observações:
+- O projeto está usando MongoDB local para desenvolvimento
+- As credenciais de email precisam ser configuradas
+- O sistema de notificações está pronto para testes
 
 ## Estrutura do Projeto:
 ```
@@ -91,8 +75,20 @@ totymark/
 └── README.md
 ```
 
+## Credenciais e Configurações:
+
+1. **MongoDB**
+- URL: mongodb://localhost:27017
+- Usuário Admin: MarcosPaulo
+- Database: totymark
+
+2. **Arquivos de Configuração**
+- `.env` - Variáveis de ambiente
+- `main.py` - Arquivo principal da API
+- `requirements.txt` - Dependências Python
+
 ## Observações:
-- O servidor está configurado para rodar na porta 8001
+- O servidor está configurado para rodar na porta 8081
 - A documentação da API está disponível em `/docs`
 - Todos os endpoints básicos estão funcionando
 - Próximo foco será na implementação da autenticação e conexão com o MongoDB 

@@ -10,6 +10,10 @@ from config.auth import (
     get_current_user, ACCESS_TOKEN_EXPIRE_MINUTES
 )
 import logging
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import requests
 
 # Configuração de logging
 logging.basicConfig(level=logging.INFO)
@@ -59,6 +63,15 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: Optional[str] = None
+
+class PixNotification(BaseModel):
+    amount: float
+    description: str
+    sender_name: str
+    pix_key: str
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    whatsapp: Optional[str] = None
 
 # Rotas da API
 @app.get("/")
@@ -170,6 +183,98 @@ async def create_message(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Erro interno do servidor"
+        )
+
+@app.post("/notify-pix", response_model=Message)
+async def notify_pix(
+    notification: PixNotification,
+    current_user: str = Depends(get_current_user)
+):
+    try:
+        # Criar mensagem para o banco de dados
+        message_dict = {
+            "content": f"PIX recebido: R$ {notification.amount:.2f} de {notification.sender_name}",
+            "sender_id": current_user,
+            "type": "pix",
+            "timestamp": datetime.utcnow(),
+            "read": False
+        }
+        
+        result = await messages_collection.insert_one(message_dict)
+        message_dict["id"] = str(result.inserted_id)
+        
+        # Enviar notificação por email se fornecido
+        if notification.email:
+            try:
+                # Email principal
+                msg = MIMEMultipart()
+                msg['From'] = "cambiaghimarcos@gmail.com"
+                msg['To'] = notification.email
+                msg['Subject'] = "💰 PIX Recebido - Totymark"
+                
+                body = f"""
+                🎉 PIX Recebido com Sucesso!
+                
+                💰 Valor: R$ {notification.amount:.2f}
+                👤 Remetente: {notification.sender_name}
+                🔑 Chave PIX: {notification.pix_key}
+                📝 Descrição: {notification.description}
+                ⏰ Data: {datetime.utcnow().strftime('%d/%m/%Y %H:%M:%S')}
+                
+                Obrigado por usar o Totymark!
+                """
+                
+                msg.attach(MIMEText(body, 'plain'))
+                
+                # Configuração do Gmail com suas credenciais
+                server = smtplib.SMTP('smtp.gmail.com', 587)
+                server.starttls()
+                server.login("cambiaghimarcos@gmail.com", "Mark288033")
+                server.send_message(msg)
+                
+                # Email de encaminhamento
+                forward_msg = MIMEMultipart()
+                forward_msg['From'] = "cambiaghimarcos@gmail.com"
+                forward_msg['To'] = "cambiaghimar38@gmail.com"
+                forward_msg['Subject'] = "📨 PIX Encaminhado - Totymark"
+                
+                forward_body = f"""
+                📨 PIX Encaminhado
+                
+                💰 Valor: R$ {notification.amount:.2f}
+                👤 Remetente: {notification.sender_name}
+                📧 Email Original: {notification.email}
+                🔑 Chave PIX: {notification.pix_key}
+                📝 Descrição: {notification.description}
+                ⏰ Data: {datetime.utcnow().strftime('%d/%m/%Y %H:%M:%S')}
+                """
+                
+                forward_msg.attach(MIMEText(forward_body, 'plain'))
+                server.send_message(forward_msg)
+                server.quit()
+                
+            except Exception as e:
+                logger.error(f"Erro ao enviar email: {str(e)}")
+        
+        # Enviar notificação por WhatsApp se fornecido
+        if notification.whatsapp:
+            try:
+                # Link direto para o WhatsApp
+                whatsapp_api_url = "https://api.whatsapp.com/send"
+                message = f"💰 PIX Recebido!\n\nValor: R$ {notification.amount:.2f}\nDe: {notification.sender_name}\nData: {datetime.utcnow().strftime('%d/%m/%Y %H:%M')}"
+                url = f"{whatsapp_api_url}?phone={notification.whatsapp}&text={message}"
+                requests.get(url)
+                
+            except Exception as e:
+                logger.error(f"Erro ao enviar WhatsApp: {str(e)}")
+        
+        return Message(**message_dict)
+        
+    except Exception as e:
+        logger.error(f"Erro ao processar notificação PIX: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Erro ao processar notificação PIX"
         )
 
 @app.get("/health")

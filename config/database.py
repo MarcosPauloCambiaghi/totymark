@@ -19,7 +19,11 @@ if not MONGODB_URL:
 try:
     # Codifica a URL para garantir que caracteres especiais sejam tratados corretamente
     encoded_url = quote_plus(MONGODB_URL)
-    client = AsyncIOMotorClient(MONGODB_URL)
+    client = AsyncIOMotorClient(encoded_url, serverSelectionTimeoutMS=5000)
+    
+    # Testa a conexão
+    client.admin.command('ping')
+    
     database = client[DATABASE_NAME]
     logger.info(f"Conectado ao banco de dados {DATABASE_NAME}")
 except Exception as e:

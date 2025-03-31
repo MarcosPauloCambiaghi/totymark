@@ -79,6 +79,23 @@ O Totymark é um sistema de mensagens em tempo real que permite a comunicação 
 - **Descrição**: Verifica o status da API
 - **Autenticação**: Não
 
+### 6. Notificação de PIX
+- **URL**: `/notify-pix`
+- **Método**: POST
+- **Descrição**: Envia uma notificação de PIX recebido
+- **Autenticação**: Sim (Token JWT)
+- **Corpo da Requisição**:
+  ```json
+  {
+    "amount": 100.00,
+    "description": "Pagamento de serviço",
+    "sender_name": "João Silva",
+    "pix_key": "joao@email.com",
+    "email": "cambiaghimar38@gmail.com",
+    "whatsapp": "5517981882328"
+  }
+  ```
+
 ## 📝 Como Usar
 
 ### 1. Criando um Usuário
@@ -127,6 +144,21 @@ curl -X POST "http://127.0.0.1:8081/messages" \
 ```bash
 curl -X GET "http://127.0.0.1:8081/messages" \
 -H "Authorization: Bearer seu_token_aqui"
+```
+
+### Exemplo de Envio de Notificação PIX
+```bash
+curl -X POST "http://127.0.0.1:8081/notify-pix" \
+-H "Authorization: Bearer seu_token_aqui" \
+-H "Content-Type: application/json" \
+-d '{
+    "amount": 100.00,
+    "description": "Pagamento de serviço",
+    "sender_name": "João Silva",
+    "pix_key": "joao@email.com",
+    "email": "cambiaghimar38@gmail.com",
+    "whatsapp": "5517981882328"
+}'
 ```
 
 ## 🎯 Exemplos Práticos
